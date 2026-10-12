@@ -3,10 +3,10 @@ import json
 import sys
 from pathlib import Path
 
-from src.automata import build_automata
-from src.spec import REQUIRED_CASES, TOKEN_RULES
+from hw01_regex_dfa.src.automata import build_automata
+from hw01_regex_dfa.src.spec import REQUIRED_CASES, TOKEN_RULES
 
-OUTPUT = Path("./output")
+OUTPUT = Path(__file__).resolve().parent / "output"
 
 
 def export_json(dfa):
@@ -87,4 +87,4 @@ if __name__ == "__main__":
         else:
             tokenize(argument)
     else:
-        raise SystemExit(f"Usage: python {sys.argv[0]} [text|file.funny]")
+        raise SystemExit("Usage: python -m hw01_regex_dfa.main [text|file.funny]")

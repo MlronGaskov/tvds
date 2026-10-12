@@ -60,7 +60,11 @@ class DFA:
             last_accept = None
 
             while end < len(text):
-                state = self.next_state(state, text[end])
+                ch = text[end]
+                rule = self.accepting[state]
+                if ord(ch) >= ASCII_SIZE and rule is not None and self.rules[rule].name == "COMMENT":
+                    ch = " "
+                state = self.next_state(state, ch)
                 if state == self.trap:
                     break
                 end += 1
@@ -72,9 +76,11 @@ class DFA:
                 raise ValueError(f"unexpected character {text[pos]!r}")
 
             end, rule = last_accept
-            if self.rules[rule].name == "BAD_INT":
+            name = self.rules[rule].name
+            if name == "BAD_INT":
                 raise ValueError(f"invalid integer {text[pos:end]!r}")
-            tokens.append((self.rules[rule], text[pos:end]))
+            if name not in ("WS", "COMMENT"):
+                tokens.append((self.rules[rule], text[pos:end]))
             pos = end
 
         return tokens

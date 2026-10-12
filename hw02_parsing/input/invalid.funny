@@ -1,0 +1,5 @@
+main() returns r:int {
+    r = 1 + ;
+    r = 5;
+    assert r > 0;
+}

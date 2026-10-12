@@ -1,15 +1,13 @@
 # HW1
 
-Запуск:
-
 ```
-python main.py
+python -m hw01_regex_dfa.main
 ```
 
 Распознавание последовательности токенов:
 
 ```
-python main.py "1+1x"
+python -m hw01_regex_dfa.main "1+1x"
 ```
 
 Результат:
@@ -24,11 +22,11 @@ IDENT: 'x'
 Тесты:
 
 ```
-python -m unittest discover -s tests -v
+python -m unittest discover -s hw01_regex_dfa/tests -v
 ```
 
 Распознавание файла Funny:
 
 ```
-python main.py ./input/input.funny
+python -m hw01_regex_dfa.main hw01_regex_dfa/input/input.funny
 ```

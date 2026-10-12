@@ -1,0 +1,90 @@
+Module          = Declaration { Declaration } EOF ;
+Declaration     = [ "function" ] IDENT "(" [ Params ] ")" FunctionTail
+                | IDENT "(" [ Params ] ")" "=>" Predicate ;
+FunctionTail    = [ "requires" Predicate ] "returns" VarDecl { "," VarDecl }
+                  [ "ensures" Predicate ] [ "uses" LocalDecl { "," LocalDecl } ] Statement ;
+Params          = VarDecl { "," VarDecl } ;
+VarDecl         = IDENT ":" Type ;
+LocalDecl       = IDENT [ ":" Type ] ;
+Type            = "int" [ "[" "]" ] ;
+
+Statement       = Block | Assignment | If | While | Assert | Assume ;
+Block           = "{" { Statement } "}" ;
+If              = "if" "(" Condition ")" Statement [ "else" Statement ] ;
+While           = "while" "(" Condition ")" [ "invariant" Predicate ] Statement ;
+Assert          = "assert" Predicate ";" ;
+Assume          = "assume" Predicate ";" ;
+Assignment      = Reference "=" Expr ";"
+                | IDENT { "," IDENT } "=" Call ";" ;
+Reference       = IDENT { "[" Expr "]" } ;
+Call            = ( IDENT | "length" ) "(" [ Expr { "," Expr } ] ")" ;
+
+Expr            = Term { ("+" | "-") Term } ;
+Term            = Unary { ("*" | "/") Unary } ;
+Unary           = "-" Unary | Primary ;
+Primary         = INT | Reference | Call | "(" Expr ")" ;
+
+Condition       = Implication ;
+Implication     = Or [ "->" Implication ] ;
+Predicate       = Or ;
+Or              = And { "or" And } ;
+And             = Not { "and" Not } ;
+Not             = "not" Not | BooleanAtom ;
+BooleanAtom     = "true" | "false" | Expr Relation Expr
+                | Call | "(" Condition ")" | Quantifier ;
+Quantifier      = ("forall" | "exists") "(" VarDecl "|" Predicate ")" ;
+Relation        = "==" | "!=" | "<" | "<=" | ">" | ">=" ;
+
+Precedence      = "->" < "or" < "and" < "not" < Relation < ("+" | "-") < ("*" | "/") < unary "-" ;
+Associativity   = "->": right; arithmetic, "and", "or": left ;
+
+WS              = /[ \t\r\n]+/ ;
+COMMENT         = /\/\/[^\r\n]*/ ;
+BAD_INT         = /0[0-9]+/ ;
+INT             = /0|[1-9][0-9]*/ ;
+IDENT           = /[A-Za-z_][A-Za-z0-9_]*/ ;
+
+KW_FUNCTION     = "function" ;
+KW_REQUIRES     = "requires" ;
+KW_RETURNS      = "returns" ;
+KW_ENSURES      = "ensures" ;
+KW_USES         = "uses" ;
+KW_INT          = "int" ;
+KW_WHILE        = "while" ;
+KW_IF           = "if" ;
+KW_ELSE         = "else" ;
+KW_ASSERT       = "assert" ;
+KW_ASSUME       = "assume" ;
+KW_INVARIANT    = "invariant" ;
+KW_LENGTH       = "length" ;
+KW_TRUE         = "true" ;
+KW_FALSE        = "false" ;
+KW_NOT          = "not" ;
+KW_AND          = "and" ;
+KW_OR           = "or" ;
+KW_FORALL       = "forall" ;
+KW_EXISTS       = "exists" ;
+
+EQ              = "==" ;
+NE              = "!=" ;
+LE              = "<=" ;
+GE              = ">=" ;
+FAT_ARROW       = "=>" ;
+IMPLIES         = "->" ;
+ASSIGN          = "=" ;
+LT              = "<" ;
+GT              = ">" ;
+PLUS            = "+" ;
+MINUS           = "-" ;
+STAR            = "*" ;
+SLASH           = "/" ;
+LPAREN          = "(" ;
+RPAREN          = ")" ;
+LBRACKET        = "[" ;
+RBRACKET        = "]" ;
+LBRACE          = "{" ;
+RBRACE          = "}" ;
+COMMA           = "," ;
+SEMICOLON       = ";" ;
+COLON           = ":" ;
+PIPE            = "|" ;
