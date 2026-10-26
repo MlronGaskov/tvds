@@ -21,6 +21,7 @@ def main():
         ast, errors = None, [str(error)]
     print(json.dumps({"ast": ast, "errors": errors}, ensure_ascii=False, indent=2))
     if errors:
+        print("\n".join(errors))
         raise SystemExit(1)
 
 
