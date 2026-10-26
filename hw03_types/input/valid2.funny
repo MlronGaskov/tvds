@@ -1,0 +1,4 @@
+main(a:int) returns r:int uses x {
+    x = a + 5;
+    r = x * 2;
+}

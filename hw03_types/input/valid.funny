@@ -1,0 +1,10 @@
+sum(a:int, b:int) returns r:int {
+    r = a + b;
+}
+
+main(a:int[]) returns r:int uses x, y:int {
+    x = sum(length(a), 1);
+    y = a[0];
+    r = x + y;
+    assert r >= 0;
+}

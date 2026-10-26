@@ -31,10 +31,17 @@ TOKEN_LABELS.update({"IDENT": "identifier", "INT": "integer", "EOF": "end of inp
 
 
 class Parser:
-    def __init__(self, tokens):
+    def __init__(self, tokens, with_positions=False):
+        self.with_positions = with_positions
         self.tokens = tokens
         self.pos = 0
         self.errors = []
+
+    def located(self, kind, token, **fields):
+        result = node(kind, **fields)
+        if self.with_positions:
+            result.update(line=token.line, column=token.column)
+        return result
 
     def peek(self):
         return self.tokens[self.pos]
@@ -102,7 +109,8 @@ class Parser:
                     return
 
     def typed_var(self, optional_type=False):
-        name = self.expect("IDENT").lexeme
+        token = self.expect("IDENT")
+        name = token.lexeme
         type_name = None
         if self.match("COLON"):
             self.expect("KW_INT")
@@ -112,8 +120,7 @@ class Parser:
                 type_name = "int[]"
         elif not optional_type:
             self.error("COLON")
-        return node("VarDecl", name=name, var_type=type_name)
-
+        return self.located("VarDecl", token, name=name, var_type=type_name)
     def typed_vars(self, required=False, optional_type=False):
         vars_ = []
         if required or self.at("IDENT"):
@@ -123,6 +130,7 @@ class Parser:
         return vars_
 
     def declaration(self):
+        start = self.peek()
         explicit_function = self.match("KW_FUNCTION")
         name = self.expect("IDENT").lexeme
         self.expect("LPAREN")
@@ -132,8 +140,7 @@ class Parser:
             if explicit_function:
                 self.error("KW_RETURNS")
             predicate = self.boolean("predicate")
-            return node("Formula", name=name, params=params, predicate=predicate)
-
+            return self.located("Formula", start, name=name, params=params, predicate=predicate)
         requires = None
         if self.match("KW_REQUIRES"):
             requires = self.boolean("predicate")
@@ -146,10 +153,11 @@ class Parser:
         if self.match("KW_USES"):
             uses = self.typed_vars(required=True, optional_type=True)
         body = self.statement()
-        return node("Function", name=name, params=params, returns=returns,
+        return self.located("Function", start, name=name, params=params, returns=returns,
                     requires=requires, ensures=ensures, uses=uses, body=body)
 
     def statement(self):
+        start = self.peek()
         if self.match("LBRACE"):
             statements = []
             while not self.at("RBRACE") and not self.at("EOF"):
@@ -162,36 +170,34 @@ class Parser:
                 if self.pos == previous and not self.at("EOF") and not self.at("RBRACE"):
                     self.take()
             self.expect("RBRACE")
-            return node("Block", statements=statements)
-
+            return self.located("Block", start, statements=statements)
         if self.match("KW_IF"):
             self.expect("LPAREN")
             condition = self.boolean("condition")
             self.expect("RPAREN")
             then = self.statement()
             otherwise = self.statement() if self.match("KW_ELSE") else None
-            return node("If", condition=condition, then=then, otherwise=otherwise)
-
+            return self.located("If", start, condition=condition, then=then, otherwise=otherwise)
         if self.match("KW_WHILE"):
             self.expect("LPAREN")
             condition = self.boolean("condition")
             self.expect("RPAREN")
             invariant = self.boolean("predicate") if self.match("KW_INVARIANT") else None
-            return node("While", condition=condition, invariant=invariant, body=self.statement())
-
+            return self.located("While", start, condition=condition, invariant=invariant, body=self.statement())
         if self.match("KW_ASSERT"):
             predicate = self.boolean("predicate")
             self.expect("SEMICOLON")
-            return node("Assert", predicate=predicate)
+            return self.located("Assert", start, predicate=predicate)
 
         if self.match("KW_ASSUME"):
             predicate = self.boolean("predicate")
             self.expect("SEMICOLON")
-            return node("Assume", predicate=predicate)
+            return self.located("Assume", start, predicate=predicate)
 
         if self.at("IDENT"):
             return self.assignment()
         self.error("statement")
+        return None
 
     def recover_statement(self, start):
         depth = 0
@@ -221,7 +227,7 @@ class Parser:
     def assignment(self):
         first = self.expect("IDENT")
         name = first.lexeme
-        root = node("Var", name=name)
+        root = self.located("Var", first, name=name)
         target = root
         indexes = []
         prefixes = []
@@ -230,11 +236,11 @@ class Parser:
             index = self.expression()
             self.expect("RBRACKET")
             indexes.append(index)
-            target = node("Index", array=target, index=index)
-
+            target = self.located("Index", first, array=target, index=index)
         targets = [target]
         while self.match("COMMA"):
-            targets.append(node("Var", name=self.expect("IDENT").lexeme))
+            token = self.expect("IDENT")
+            targets.append(self.located("Var", token, name=token.lexeme))
         self.expect("ASSIGN")
         value = self.expression()
         self.expect("SEMICOLON")
@@ -242,13 +248,12 @@ class Parser:
         if len(targets) > 1:
             if indexes or value["type"] != "Call":
                 raise ParseError(f"{first.line}:{first.column}: multiple assignment requires a function call")
-            return node("MultiAssign", targets=targets, value=value)
+            return self.located("MultiAssign", first, targets=targets, value=value)
         if indexes:
             for array, index in reversed(list(zip(prefixes, indexes))):
-                value = node("ArraySet", array=array, index=index, value=value)
-            return node("Assign", target=root, value=value)
-        return node("Assign", target=target, value=value)
-
+                value = self.located("ArraySet", first, array=array, index=index, value=value)
+            return self.located("Assign", first, target=root, value=value)
+        return self.located("Assign", first, target=target, value=value)
     def boolean(self, mode):
         value = self.expression(mode=mode)
         if value["type"] not in ("Bool", "Binary", "Unary", "Quantifier", "Call"):
@@ -268,9 +273,9 @@ class Parser:
             self.error("expression")
         self.take()
         if token.kind == "INT":
-            left = node("Int", value=int(token.lexeme))
+            left = self.located("Int", token, value=int(token.lexeme))
         elif token.kind in ("IDENT", "KW_LENGTH"):
-            left = node("Var", name=token.lexeme)
+            left = self.located("Var", token, name=token.lexeme)
             while True:
                 if left["type"] == "Var" and self.match("LPAREN"):
                     args = []
@@ -279,26 +284,26 @@ class Parser:
                         while self.match("COMMA"):
                             args.append(self.expression())
                     self.expect("RPAREN")
-                    left = node("Call", name=left["name"], args=args)
+                    left = self.located("Call", token, name=left["name"], args=args)
                 elif self.match("LBRACKET"):
                     index = self.expression()
                     self.expect("RBRACKET")
-                    left = node("Index", array=left, index=index)
+                    left = self.located("Index", token, array=left, index=index)
                 else:
                     break
         elif token.kind == "MINUS":
-            left = node("Unary", op="-", operand=self.expression(70, mode))
+            left = self.located("Unary", token, op="-", operand=self.expression(70, mode))
         elif token.kind == "KW_NOT" and mode != "arithmetic":
-            left = node("Unary", op="not", operand=self.expression(35, mode))
+            left = self.located("Unary", token, op="not", operand=self.expression(35, mode))
         elif token.kind in ("KW_TRUE", "KW_FALSE") and mode != "arithmetic":
-            left = node("Bool", value=token.kind == "KW_TRUE")
+            left = self.located("Bool", token, value=token.kind == "KW_TRUE")
         elif token.kind in ("KW_FORALL", "KW_EXISTS") and mode == "predicate":
             self.expect("LPAREN")
             variable = self.typed_var()
             self.expect("PIPE")
             predicate = self.boolean("predicate")
             self.expect("RPAREN")
-            left = node("Quantifier", op=token.lexeme, variable=variable, predicate=predicate)
+            left = self.located("Quantifier", token, op=token.lexeme, variable=variable, predicate=predicate)
         elif token.kind == "LPAREN":
             left = self.expression(mode=mode)
             self.expect("RPAREN")
@@ -317,9 +322,8 @@ class Parser:
             self.take()
             right_bp = bp if op == "IMPLIES" else bp + 1
             right = self.expression(right_bp, mode)
-            left = node("Binary", op=op_token.lexeme, left=left, right=right)
+            left = self.located("Binary", op_token, op=op_token.lexeme, left=left, right=right)
         return left
 
-
-def parse_source(text):
-    return Parser(tokenize(text)).parse()
+def parse_source(text, with_positions=False):
+    return Parser(tokenize(text), with_positions).parse()

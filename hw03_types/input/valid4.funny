@@ -1,0 +1,4 @@
+main(a:int[], i:int) returns r:int {
+    a[i] = 7;
+    r = a[i] + length(a);
+}

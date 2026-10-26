@@ -1,0 +1,5 @@
+main(a:int) returns r:int uses x {
+    x = missing + 1;
+    r = a[0];
+    assert length(a) > 0;
+}
