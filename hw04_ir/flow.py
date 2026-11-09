@@ -26,18 +26,20 @@ def cfg(code):
         if inst["op"] in ("jump", "branch", "ret") and index + 1 < len(code):
             leaders.add(index + 1)
     starts = sorted(leaders)
-    blocks = [{"id": f"B{i}", "instructions": code[start:end], "succ": [], "pred": []}
+    blocks = [{"id": f"B{i}", "instructions": code[start:end], "succ": [], "pred": [], "edges": []}
               for i, (start, end) in enumerate(zip(starts, starts[1:] + [len(code)]))]
     labels = {block["instructions"][0]["name"]: block["id"]
               for block in blocks if block["instructions"][0]["op"] == "label"}
     for index, block in enumerate(blocks):
         last = block["instructions"][-1]
         if last["op"] == "jump":
-            block["succ"] = [labels[last["target"]]]
+            block["edges"] = [{"to": labels[last["target"]], "condition": "jump"}]
         elif last["op"] == "branch":
-            block["succ"] = list(dict.fromkeys([labels[last["true"]], labels[last["false"]]]))
+            block["edges"] = [{"to": labels[last["true"]], "condition": "true"},
+                              {"to": labels[last["false"]], "condition": "false"}]
         elif last["op"] != "ret" and index + 1 < len(blocks):
-            block["succ"] = [blocks[index + 1]["id"]]
+            block["edges"] = [{"to": blocks[index + 1]["id"], "condition": "fallthrough"}]
+        block["succ"] = list(dict.fromkeys(edge["to"] for edge in block["edges"]))
     lookup = {block["id"]: block for block in blocks}
     for block in blocks:
         for successor in block["succ"]:
