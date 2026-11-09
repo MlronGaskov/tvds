@@ -25,14 +25,23 @@ def evaluate(op, *values):
 
 def simplify(code, propagate, algebra):
     result = []
+    fields = {
+        "copy": ("src",), "un": ("arg",), "bin": ("left", "right"),
+        "get": ("array", "index"), "set": ("array", "index", "value"),
+        "branch": ("cond",), "assert": ("cond",), "assume": ("cond",)
+    }
     for block in cfg(code):
         known = {}
+        aliases = {}
         for original in block["instructions"]:
             inst = original.copy()
             op = inst["op"]
-            if op == "const":
-                known[inst["dst"]] = inst["value"]
-            elif op in ("copy", "un", "bin"):
+            for field in fields.get(op, ()):
+                inst[field] = aliases.get(inst[field], inst[field])
+            if op in ("call", "ret"):
+                field = "args" if op == "call" else "values"
+                inst[field] = [aliases.get(value, value) for value in inst[field]]
+            if op in ("copy", "un", "bin"):
                 args = ([inst["src"]] if op == "copy" else
                         [inst["arg"]] if op == "un" else
                         [inst["left"], inst["right"]])
@@ -63,14 +72,17 @@ def simplify(code, propagate, algebra):
                     if src is not None:
                         replacement = {"op": "copy", "dst": inst["dst"], "src": src, "type": inst["type"]}
                 inst = replacement or inst
-                known.pop(inst["dst"], None)
-                if inst["op"] == "const":
-                    known[inst["dst"]] = inst["value"]
-                elif inst["op"] == "copy" and propagate and inst["src"] in known:
+            for dst in defined(inst):
+                known.pop(dst, None)
+                aliases.pop(dst, None)
+                aliases = {name: src for name, src in aliases.items() if src != dst}
+            if inst["op"] == "const":
+                known[inst["dst"]] = inst["value"]
+            elif inst["op"] == "copy":
+                if propagate and inst["src"] in known:
                     known[inst["dst"]] = known[inst["src"]]
-            else:
-                for dst in defined(inst):
-                    known.pop(dst, None)
+                if inst["src"] != inst["dst"]:
+                    aliases[inst["dst"]] = inst["src"]
             result.append(inst)
     return result
 
