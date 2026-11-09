@@ -1,0 +1,8 @@
+sum(n:int) returns r:int uses i {
+    r = 0;
+    i = 0;
+    while (i < n) invariant i >= 0 {
+        r = r + i;
+        i = i + 1;
+    }
+}

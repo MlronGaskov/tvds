@@ -1,0 +1,212 @@
+{
+  "functions": {
+    "main": {
+      "params": [
+        {
+          "name": "a",
+          "type": "int"
+        },
+        {
+          "name": "b",
+          "type": "int"
+        }
+      ],
+      "returns": [
+        {
+          "name": "r",
+          "type": "int"
+        }
+      ],
+      "before": [
+        {
+          "op": "const",
+          "dst": "%t1",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t2",
+          "operator": "+",
+          "left": "a",
+          "right": "%t1",
+          "type": "int"
+        },
+        {
+          "op": "const",
+          "dst": "%t3",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t4",
+          "operator": "+",
+          "left": "b",
+          "right": "%t3",
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t5",
+          "operator": "*",
+          "left": "%t2",
+          "right": "%t4",
+          "type": "int"
+        },
+        {
+          "op": "copy",
+          "dst": "r",
+          "src": "%t5",
+          "type": "int"
+        },
+        {
+          "op": "ret",
+          "values": [
+            "r"
+          ]
+        }
+      ],
+      "after": [
+        {
+          "op": "const",
+          "dst": "%t1",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t2",
+          "operator": "+",
+          "left": "a",
+          "right": "%t1",
+          "type": "int"
+        },
+        {
+          "op": "const",
+          "dst": "%t3",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t4",
+          "operator": "+",
+          "left": "b",
+          "right": "%t3",
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t5",
+          "operator": "*",
+          "left": "%t2",
+          "right": "%t4",
+          "type": "int"
+        },
+        {
+          "op": "copy",
+          "dst": "r",
+          "src": "%t5",
+          "type": "int"
+        },
+        {
+          "op": "ret",
+          "values": [
+            "r"
+          ]
+        }
+      ],
+      "cfg": [
+        {
+          "id": "B0",
+          "instructions": [
+            {
+              "op": "const",
+              "dst": "%t1",
+              "value": 1,
+              "type": "int"
+            },
+            {
+              "op": "bin",
+              "dst": "%t2",
+              "operator": "+",
+              "left": "a",
+              "right": "%t1",
+              "type": "int"
+            },
+            {
+              "op": "const",
+              "dst": "%t3",
+              "value": 2,
+              "type": "int"
+            },
+            {
+              "op": "bin",
+              "dst": "%t4",
+              "operator": "+",
+              "left": "b",
+              "right": "%t3",
+              "type": "int"
+            },
+            {
+              "op": "bin",
+              "dst": "%t5",
+              "operator": "*",
+              "left": "%t2",
+              "right": "%t4",
+              "type": "int"
+            },
+            {
+              "op": "copy",
+              "dst": "r",
+              "src": "%t5",
+              "type": "int"
+            },
+            {
+              "op": "ret",
+              "values": [
+                "r"
+              ]
+            }
+          ],
+          "succ": [],
+          "pred": []
+        }
+      ],
+      "interference": {
+        "%t1": [],
+        "%t2": [
+          "%t3",
+          "%t4"
+        ],
+        "%t3": [
+          "%t2"
+        ],
+        "%t4": [
+          "%t2"
+        ],
+        "%t5": []
+      },
+      "colors": {
+        "%t2": 0,
+        "%t3": 1,
+        "%t4": 1,
+        "%t1": 0,
+        "%t5": 0
+      },
+      "metrics": {
+        "before": {
+          "instructions": 7,
+          "temporaries": 5
+        },
+        "after": {
+          "instructions": 7,
+          "temporaries": 5
+        },
+        "colors": 2
+      }
+    }
+  },
+  "errors": []
+}

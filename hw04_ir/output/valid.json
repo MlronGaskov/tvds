@@ -1,0 +1,326 @@
+{
+  "functions": {
+    "main": {
+      "params": [
+        {
+          "name": "a",
+          "type": "int"
+        }
+      ],
+      "returns": [
+        {
+          "name": "r",
+          "type": "int"
+        }
+      ],
+      "before": [
+        {
+          "op": "const",
+          "dst": "%t1",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "op": "const",
+          "dst": "%t2",
+          "value": 3,
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t3",
+          "operator": "*",
+          "left": "%t1",
+          "right": "%t2",
+          "type": "int"
+        },
+        {
+          "op": "const",
+          "dst": "%t4",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t5",
+          "operator": "+",
+          "left": "%t3",
+          "right": "%t4",
+          "type": "int"
+        },
+        {
+          "op": "copy",
+          "dst": "x",
+          "src": "%t5",
+          "type": "int"
+        },
+        {
+          "op": "const",
+          "dst": "%t6",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t7",
+          "operator": ">",
+          "left": "a",
+          "right": "%t6",
+          "type": "bool"
+        },
+        {
+          "op": "branch",
+          "cond": "%t7",
+          "true": "L1",
+          "false": "L2"
+        },
+        {
+          "op": "label",
+          "name": "L1"
+        },
+        {
+          "op": "bin",
+          "dst": "%t8",
+          "operator": "+",
+          "left": "x",
+          "right": "a",
+          "type": "int"
+        },
+        {
+          "op": "copy",
+          "dst": "r",
+          "src": "%t8",
+          "type": "int"
+        },
+        {
+          "op": "jump",
+          "target": "L3"
+        },
+        {
+          "op": "label",
+          "name": "L2"
+        },
+        {
+          "op": "copy",
+          "dst": "r",
+          "src": "x",
+          "type": "int"
+        },
+        {
+          "op": "label",
+          "name": "L3"
+        },
+        {
+          "op": "ret",
+          "values": [
+            "r"
+          ]
+        }
+      ],
+      "after": [
+        {
+          "op": "const",
+          "dst": "x",
+          "value": 6,
+          "type": "int"
+        },
+        {
+          "op": "const",
+          "dst": "%t6",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "op": "bin",
+          "dst": "%t7",
+          "operator": ">",
+          "left": "a",
+          "right": "%t6",
+          "type": "bool"
+        },
+        {
+          "op": "branch",
+          "cond": "%t7",
+          "true": "L1",
+          "false": "L2"
+        },
+        {
+          "op": "label",
+          "name": "L1"
+        },
+        {
+          "op": "bin",
+          "dst": "%t8",
+          "operator": "+",
+          "left": "x",
+          "right": "a",
+          "type": "int"
+        },
+        {
+          "op": "copy",
+          "dst": "r",
+          "src": "%t8",
+          "type": "int"
+        },
+        {
+          "op": "jump",
+          "target": "L3"
+        },
+        {
+          "op": "label",
+          "name": "L2"
+        },
+        {
+          "op": "copy",
+          "dst": "r",
+          "src": "x",
+          "type": "int"
+        },
+        {
+          "op": "label",
+          "name": "L3"
+        },
+        {
+          "op": "ret",
+          "values": [
+            "r"
+          ]
+        }
+      ],
+      "cfg": [
+        {
+          "id": "B0",
+          "instructions": [
+            {
+              "op": "const",
+              "dst": "x",
+              "value": 6,
+              "type": "int"
+            },
+            {
+              "op": "const",
+              "dst": "%t6",
+              "value": 0,
+              "type": "int"
+            },
+            {
+              "op": "bin",
+              "dst": "%t7",
+              "operator": ">",
+              "left": "a",
+              "right": "%t6",
+              "type": "bool"
+            },
+            {
+              "op": "branch",
+              "cond": "%t7",
+              "true": "L1",
+              "false": "L2"
+            }
+          ],
+          "succ": [
+            "B1",
+            "B2"
+          ],
+          "pred": []
+        },
+        {
+          "id": "B1",
+          "instructions": [
+            {
+              "op": "label",
+              "name": "L1"
+            },
+            {
+              "op": "bin",
+              "dst": "%t8",
+              "operator": "+",
+              "left": "x",
+              "right": "a",
+              "type": "int"
+            },
+            {
+              "op": "copy",
+              "dst": "r",
+              "src": "%t8",
+              "type": "int"
+            },
+            {
+              "op": "jump",
+              "target": "L3"
+            }
+          ],
+          "succ": [
+            "B3"
+          ],
+          "pred": [
+            "B0"
+          ]
+        },
+        {
+          "id": "B2",
+          "instructions": [
+            {
+              "op": "label",
+              "name": "L2"
+            },
+            {
+              "op": "copy",
+              "dst": "r",
+              "src": "x",
+              "type": "int"
+            }
+          ],
+          "succ": [
+            "B3"
+          ],
+          "pred": [
+            "B0"
+          ]
+        },
+        {
+          "id": "B3",
+          "instructions": [
+            {
+              "op": "label",
+              "name": "L3"
+            },
+            {
+              "op": "ret",
+              "values": [
+                "r"
+              ]
+            }
+          ],
+          "succ": [],
+          "pred": [
+            "B1",
+            "B2"
+          ]
+        }
+      ],
+      "interference": {
+        "%t6": [],
+        "%t7": [],
+        "%t8": []
+      },
+      "colors": {
+        "%t6": 0,
+        "%t7": 0,
+        "%t8": 0
+      },
+      "metrics": {
+        "before": {
+          "instructions": 17,
+          "temporaries": 8
+        },
+        "after": {
+          "instructions": 12,
+          "temporaries": 3
+        },
+        "colors": 1
+      }
+    }
+  },
+  "errors": []
+}

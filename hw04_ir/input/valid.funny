@@ -1,0 +1,8 @@
+main(a:int) returns r:int uses x {
+    x = 2 * 3 + 0;
+    if (a > 0) {
+        r = x + a;
+    } else {
+        r = x;
+    }
+}
